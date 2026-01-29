@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String
+  streak        Int       @default(0)
+  lastStudyDate DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  decks         Deck[]
+  studySessions StudySession[]
+  badges        Badge[]
+
+  @@map("users")
+}
+
+model Deck {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  color       String   @default("#4F46E5")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  cards       Card[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  studySessions StudySession[]
+
+  @@map("decks")
+}
+
+model Card {
+  id          String   @id @default(uuid())
+  front       String
+  back        String
+  example     String?
+  audioUrl    String?
+  deckId      String
+  deck        Deck     @relation(fields: [deckId], references: [id])
+  difficulty  Int      @default(3) // 1-5 scale
+  nextReview  DateTime @default(now())
+  interval    Int      @default(1) // days
+  easeFactor  Float    @default(2.5)
+  reviewCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cards")
+}
+
+model StudySession {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  deckId    String
+  deck      Deck     @relation(fields: [deckId], references: [id])
+  cardsReviewed Int  @default(0)
+  correctAnswers Int @default(0)
+  duration  Int      @default(0) // in seconds
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("study_sessions")
+}
+
+model Badge {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        BadgeType
+  earnedAt    DateTime @default(now())
+  title       String
+  description String
+  icon        String
+
+  @@map("badges")
+}
+
+enum BadgeType {
+  FIRST_DECK
+  STREAK_7
+  STREAK_30
+  PERFECT_SESSION
+  FAST_LEARNER
+  DECK_MASTER
+}

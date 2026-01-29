@@ -6,9 +6,16 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { DecksModule } from './decks/decks.module';
+import { validate } from './config/env.validation';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, validate, envFilePath: '.env' }),
+    PrismaModule,
+    AuthModule,
+    DecksModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

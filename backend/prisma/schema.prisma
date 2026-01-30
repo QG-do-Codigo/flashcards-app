@@ -40,20 +40,27 @@ model Deck {
 
 model Card {
   id          String   @id @default(uuid())
-  front       String
-  back        String
-  example     String?
-  audioUrl    String?
+  front       String   // Texto da frente (pergunta)
+  back        String   // Texto do verso (resposta)
+  example     String?  // Exemplo de uso (opcional)
+  audioUrl    String?  // URL para áudio (opcional)
   deckId      String
-  deck        Deck     @relation(fields: [deckId], references: [id])
-  difficulty  Int      @default(3) // 1-5 scale
-  nextReview  DateTime @default(now())
-  interval    Int      @default(1) // days
-  easeFactor  Float    @default(2.5)
-  reviewCount Int      @default(0)
+  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  
+  // Campos para o algoritmo SM-2
+  difficulty  Int      @default(3) // 1-5 (1: muito difícil, 5: muito fácil)
+  nextReview  DateTime @default(now()) // Próxima data de revisão
+  interval    Int      @default(1) // Intervalo em dias
+  easeFactor  Float    @default(2.5) // Fator de facilidade
+  reviewCount Int      @default(0) // Número de vezes revisado
+  
+  // Timestamps
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([deckId])
+  @@index([nextReview])
+  @@unique([front, deckId])
   @@map("cards")
 }
 

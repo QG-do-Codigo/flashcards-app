@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { DecksModule } from './decks/decks.module';
 import { validate } from './config/env.validation';
+import { CardsModule } from './cards/cards.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { validate } from './config/env.validation';
     PrismaModule,
     AuthModule,
     DecksModule,
+    CardsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

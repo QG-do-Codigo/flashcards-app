@@ -6,13 +6,11 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
   app.enableCors({
     origin: ['http://localhost:3000'],
     credentials: true,
   });
 
-  // Enable validation
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -20,18 +18,32 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('Flashcards API')
     .setDescription(
-      'API for English learning flashcards with spaced repetition',
+      'API completa para sistema de flashcards com repetição espaçada',
     )
     .setVersion('1.0')
-    .addBearerAuth() // Para suportar JWT no Swagger
+    .addTag('app', 'Teste de API geral')
+    .addTag('auth', 'Autenticação de usuários')
+    .addTag('decks', 'Gerenciamento de baralhos')
+    .addTag('cards', 'Gerenciamento de cards e algoritmo SM-2')
+
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Insira o token JWT',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(process.env.PORT || 3001);
   console.log(`Application is running on: ${await app.getUrl()}`);

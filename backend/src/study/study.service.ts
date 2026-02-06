@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
+import { BadgesService } from '../badges/badges.service';
 
 @Injectable()
 export class StudyService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private badgesService: BadgesService,
+  ) {}
 
   async startSession(userId: string, createSessionDto: CreateSessionDto) {
     const deck = await this.prisma.deck.findFirst({
@@ -57,7 +61,7 @@ export class StudyService {
 
   async findAll(userId: string, deckId?: string, limit: number = 20) {
     const whereClause: any = { userId };
-
+    
     if (deckId) {
       whereClause.deckId = deckId;
     }
@@ -96,10 +100,18 @@ export class StudyService {
       throw new NotFoundException('Sessão não encontrada');
     }
 
-    return this.prisma.studySession.update({
+    const updatedSession = await this.prisma.studySession.update({
       where: { id: sessionId },
       data: updateSessionDto,
     });
+
+    // Atualiza streak e badges se a sessão foi completada
+    if (updateSessionDto.completed && !session.completed) {
+      await this.updateUserStreak(userId);
+      await this.checkSessionBadges(userId, updatedSession);
+    }
+
+    return updatedSession;
   }
 
   async remove(userId: string, sessionId: string) {
@@ -117,5 +129,94 @@ export class StudyService {
     return this.prisma.studySession.delete({
       where: { id: sessionId },
     });
+  }
+
+  private async updateUserStreak(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastStudyDate = user.lastStudyDate
+      ? new Date(user.lastStudyDate)
+      : null;
+
+    if (!lastStudyDate || lastStudyDate < today) {
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      let newStreak = 1;
+
+      if (lastStudyDate && lastStudyDate.getTime() === yesterday.getTime()) {
+        newStreak = user.streak + 1;
+      }
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          streak: newStreak,
+          lastStudyDate: new Date(),
+        },
+      });
+
+      await this.checkStreakBadges(userId, newStreak);
+    }
+  }
+
+  private async checkStreakBadges(userId: string, streak: number) {
+    const badgesToCheck = [
+      { type: 'STREAK_7', threshold: 7, title: '7 Day Streak', description: 'Estudou por 7 dias consecutivos', icon: '🔥' },
+      { type: 'STREAK_30', threshold: 30, title: '30 Day Streak', description: 'Estudou por 30 dias consecutivos', icon: '🌟' },
+      { type: 'STREAK_100', threshold: 100, title: '100 Day Streak', description: 'Estudou por 100 dias consecutivos', icon: '💎' },
+    ];
+
+    for (const badge of badgesToCheck) {
+      if (streak === badge.threshold) {
+        await this.badgesService.createBadge(userId, {
+          type: badge.type,
+          title: badge.title,
+          description: badge.description,
+          icon: badge.icon,
+        });
+      }
+    }
+  }
+
+  private async checkSessionBadges(userId: string, session: any) {
+    const { cardsReviewed, correctAnswers } = session;
+
+    // Badge: Sessão Perfeita
+    if (cardsReviewed > 0 && correctAnswers === cardsReviewed) {
+      await this.badgesService.createBadge(userId, {
+        type: 'PERFECT_SESSION',
+        title: 'Sessão Perfeita',
+        description: 'Acertou todos os cards em uma sessão',
+        icon: '🎯',
+      });
+    }
+
+    // Badge: Aprendiz Rápido
+    if (cardsReviewed >= 10 && (correctAnswers / cardsReviewed) >= 0.9) {
+      await this.badgesService.createBadge(userId, {
+        type: 'FAST_LEARNER',
+        title: 'Aprendiz Rápido',
+        description: 'Alta precisão em sessão com bom volume',
+        icon: '⚡',
+      });
+    }
+
+    // Badge: Maratona
+    if (cardsReviewed >= 50) {
+      await this.badgesService.createBadge(userId, {
+        type: 'MARATHON',
+        title: 'Maratona',
+        description: 'Revisou 50+ cards em uma sessão',
+        icon: '🏃‍♂️',
+      });
+    }
   }
 }

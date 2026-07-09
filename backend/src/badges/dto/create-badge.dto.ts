@@ -1,9 +1,9 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import { BadgeType } from '@prisma/client';
 
 export class CreateBadgeDto {
-  @IsString()
-  @IsNotEmpty()
-  type: string;
+  @IsEnum(BadgeType)
+  type: BadgeType;
 
   @IsString()
   @IsNotEmpty()

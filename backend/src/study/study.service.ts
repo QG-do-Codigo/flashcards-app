@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadgeType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
@@ -168,7 +169,7 @@ export class StudyService {
   }
 
   private async checkStreakBadges(userId: string, streak: number) {
-    const badgesToCheck = [
+    const badgesToCheck: { type: BadgeType; threshold: number; title: string; description: string; icon: string }[] = [
       { type: 'STREAK_7', threshold: 7, title: '7 Day Streak', description: 'Estudou por 7 dias consecutivos', icon: '🔥' },
       { type: 'STREAK_30', threshold: 30, title: '30 Day Streak', description: 'Estudou por 30 dias consecutivos', icon: '🌟' },
       { type: 'STREAK_100', threshold: 100, title: '100 Day Streak', description: 'Estudou por 100 dias consecutivos', icon: '💎' },

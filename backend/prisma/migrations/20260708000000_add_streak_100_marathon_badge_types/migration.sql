@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "BadgeType" ADD VALUE 'STREAK_100';
+ALTER TYPE "BadgeType" ADD VALUE 'MARATHON';

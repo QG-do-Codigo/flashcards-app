@@ -84,16 +84,27 @@ model StudySession {
   @@map("study_sessions")
 }
 
+enum BadgeType {
+  FIRST_DECK
+  STREAK_7
+  STREAK_30
+  STREAK_100
+  PERFECT_SESSION
+  FAST_LEARNER
+  DECK_MASTER
+  MARATHON
+}
+
 model Badge {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type        String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        BadgeType
   title       String
   description String
   icon        String
-  color       String?  @default("#4F46E5")
-  earnedAt    DateTime @default(now())
+  color       String?   @default("#4F46E5")
+  earnedAt    DateTime  @default(now())
 
   @@index([userId])
   @@index([type])

@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { DecksModule } from './decks/decks.module';
 import { validate } from './config/env.validation';
 import { CardsModule } from './cards/cards.module';
+import { StudyModule } from './study/study.module';
+import { BadgesModule } from './badges/badges.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { CardsModule } from './cards/cards.module';
     AuthModule,
     DecksModule,
     CardsModule,
+    StudyModule,
+    BadgesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

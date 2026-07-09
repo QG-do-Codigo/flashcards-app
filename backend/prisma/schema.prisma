@@ -65,38 +65,49 @@ model Card {
 }
 
 model StudySession {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  deckId    String
-  deck      Deck     @relation(fields: [deckId], references: [id])
-  cardsReviewed Int  @default(0)
-  correctAnswers Int @default(0)
-  duration  Int      @default(0) // in seconds
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deckId         String
+  deck           Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  cardsReviewed  Int      @default(0)
+  correctAnswers Int      @default(0)
+  duration       Int      @default(0)
+  completed      Boolean  @default(false)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
+  @@index([userId])
+  @@index([deckId])
+  @@index([createdAt])
   @@map("study_sessions")
-}
-
-model Badge {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  type        BadgeType
-  earnedAt    DateTime @default(now())
-  title       String
-  description String
-  icon        String
-
-  @@map("badges")
 }
 
 enum BadgeType {
   FIRST_DECK
   STREAK_7
   STREAK_30
+  STREAK_100
   PERFECT_SESSION
   FAST_LEARNER
   DECK_MASTER
+  MARATHON
+}
+
+model Badge {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        BadgeType
+  title       String
+  description String
+  icon        String
+  color       String?   @default("#4F46E5")
+  earnedAt    DateTime  @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([earnedAt])
+  @@map("badges")
 }

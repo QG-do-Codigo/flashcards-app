@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "study_sessions"
+  ADD COLUMN "notes" TEXT,
+  ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "badges" ADD COLUMN "color" TEXT DEFAULT '#4F46E5';

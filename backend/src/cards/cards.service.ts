@@ -46,9 +46,9 @@ export class CardsService {
         deckId,
         // Valores padrão para o algoritmo SM-2
         difficulty: 3, // Dificuldade média inicial
-        interval: 1, // Revisar em 1 dia
+        interval: 1, // Intervalo inicial de 1 dia (aplicado após a primeira revisão)
         easeFactor: 2.5, // Fator de facilidade padrão
-        nextReview: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // Amanhã
+        nextReview: new Date(), // Card novo já disponível para estudo
       },
     });
   }
@@ -72,7 +72,7 @@ export class CardsService {
       difficulty: 3,
       interval: 1,
       easeFactor: 2.5,
-      nextReview: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+      nextReview: new Date(),
     }));
 
     // Cria todos os cards
